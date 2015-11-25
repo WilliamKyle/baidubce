@@ -8,7 +8,7 @@ import (
 )
 
 func GetHttpHeadTimeStamp() string {
-	gmt := time.Now().Add(-1000 * 1000 * 1000 * 60 * 60 * 8)
+	gmt := time.Now().UTC()
 	return gmt.Format("2006-01-02T15:04:05Z")
 }
 
@@ -40,4 +40,3 @@ func UriEncodeExceptSlash(s string) string {
 	}
 	return strings.Join(result, "/")
 }
-
