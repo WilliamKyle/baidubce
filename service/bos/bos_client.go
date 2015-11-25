@@ -45,7 +45,6 @@ func (c Client) GetEndpoint() string {
 }
 
 func (c Client) GetHost() string {
-	//return "bos.qasandbox.bcetest.baidu.com"
 	if c.Host != "" {
 		return c.Host
 	}
@@ -233,6 +232,7 @@ func (c Client) ListObjects(bucketName string, delimiter, marker, maxKeys, prefi
 		query = append(query, "maxKeys="+maxKeys.(string))
 	}
 	if prefix != nil {
+		prefix = c.formatPath(prefix.(string))
 		query = append(query, "prefix="+prefix.(string))
 	}
 	req := &httplib.Request{
@@ -366,6 +366,7 @@ Object Opreation Method
  */
 
 func (c Client) PutObject(bucketName, objectName string, body *bytes.Reader, contentMD5, contentSHA256 string, metaInfo map[string]string) (eTag string, err error) {
+	objectName = c.formatPath(objectName)
 	req := &httplib.Request{
 		Method:  httplib.PUT,
 		Headers: map[string]string{},
@@ -408,6 +409,7 @@ type MultipartUploadResponse struct {
 }
 
 func (c Client) InitiateMultipartUpload(bucketName, objectName, contentType string) (output MultipartUploadResponse, err error) {
+	objectName = c.formatPath(objectName)
 	req := &httplib.Request{
 		Method:  httplib.POST,
 		Headers: map[string]string{},
@@ -442,6 +444,7 @@ func (c Client) InitiateMultipartUpload(bucketName, objectName, contentType stri
  */
 
 func (c Client) UploadPart(bucketName, objectName, uploadId, partNumber string, body *bytes.Reader) (eTag string, err error) {
+	objectName = c.formatPath(objectName)
 	req := &httplib.Request{
 		Method:  httplib.PUT,
 		Headers: map[string]string{},
@@ -478,6 +481,7 @@ type CompleteMultipartUploadResponse struct {
 }
 
 func (c Client) CompleteMultipartUpload(bucketName, objectName, uploadId string, parts []PartInfo) (output CompleteMultipartUploadResponse, err error) {
+	objectName = c.formatPath(objectName)
 	req := &httplib.Request{
 		Method:  httplib.POST,
 		Headers: map[string]string{},
@@ -511,6 +515,7 @@ func (c Client) CompleteMultipartUpload(bucketName, objectName, uploadId string,
  */
 
 func (c Client) AbortMultipartUpload(bucketName, objectName, uploadId string) (err error) {
+	objectName = c.formatPath(objectName)
 	req := &httplib.Request{
 		Method:  httplib.DELETE,
 		Headers: map[string]string{},
@@ -546,6 +551,7 @@ type ListPartsResponse struct {
 }
 
 func (c Client) ListParts(bucketName, objectName, uploadId string, partNumberMarker, maxParts interface{}) (output ListPartsResponse, err error) {
+	objectName = c.formatPath(objectName)
 	query := []string{}
 	query = append(query, "uploadId="+uploadId)
 	if partNumberMarker != nil {
@@ -615,6 +621,7 @@ func (c Client) ListMultipartUploads(bucketName string, delimiter, keyMarker, ma
 		query = append(query, "maxUploads="+maxUploads.(string))
 	}
 	if prefix != nil {
+		prefix = c.formatPath(prefix.(string))
 		query = append(query, "prefix="+prefix.(string))
 	}
 	req := &httplib.Request{
@@ -651,6 +658,7 @@ type CopyObjectResponse struct {
 }
 
 func (c Client) CopyObject(srcBucketName, srcObjectName, destBucketName, destObjectName, eTag, metaDirect string) (output CopyObjectResponse, err error) {
+	destObjectName = c.formatPath(destObjectName)
 	req := &httplib.Request{
 		Method:  httplib.PUT,
 		Headers: map[string]string{},
@@ -694,13 +702,18 @@ type GetObjectResponse struct {
 }
 
 func (c Client) GetObject(bucketName, objectName string, startPos, endPos int64) (output GetObjectResponse, err error) {
+	objectName = c.formatPath(objectName)
 	req := &httplib.Request{
 		Method:  httplib.GET,
 		Headers: map[string]string{},
 		Path:    c.APIVersion + "/" + bucketName + "/" + objectName,
 	}
 	if startPos >= 0 && endPos > 0 {
-		req.Headers[httplib.RANGE] = fmt.Sprintf("bytes=%d-%d", startPos, endPos)
+		if endPos > startPos {
+			req.Headers[httplib.RANGE] = fmt.Sprintf("bytes=%d-%d", startPos, endPos)
+		} else {
+			req.Headers[httplib.RANGE] = fmt.Sprintf("bytes=%d-", startPos)
+		}
 	}
 
 	res, err := c.doRequest(req)
@@ -727,6 +740,7 @@ func (c Client) GetObject(bucketName, objectName string, startPos, endPos int64)
  */
 
 func (c Client) GetObjectMeta(bucketName, objectName string) (output map[string]string, err error) {
+	objectName = c.formatPath(objectName)
 	req := &httplib.Request{
 		Method:  httplib.HEAD,
 		Headers: map[string]string{},
@@ -755,6 +769,7 @@ func (c Client) GetObjectMeta(bucketName, objectName string) (output map[string]
  */
 
 func (c Client) DeleteObject(bucketName, objectName string) (err error) {
+	objectName = c.formatPath(objectName)
 	req := &httplib.Request{
 		Method:  httplib.DELETE,
 		Headers: map[string]string{},
@@ -768,4 +783,11 @@ func (c Client) DeleteObject(bucketName, objectName string) (err error) {
 		}
 	}
 	return
+}
+
+func (c Client) formatPath(objectName string) string {
+	if objectName[0] == '/' {
+		return objectName[1:]
+	}
+	return objectName
 }
