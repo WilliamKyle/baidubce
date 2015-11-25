@@ -392,7 +392,7 @@ func (c Client) PutObject(bucketName, objectName string, body *bytes.Reader, con
 
 	res, err := c.doRequest(req)
 	if err == nil {
-		eTag = strings.Replace(res.Header.Get("Etag"), "\"", "", -1)
+		eTag = strings.Replace(res.Header.Get("ETag"), "\"", "", -1)
 	}
 	return
 }
@@ -456,7 +456,7 @@ func (c Client) UploadPart(bucketName, objectName, uploadId, partNumber string, 
 
 	res, err := c.doRequest(req)
 	if err == nil {
-		eTag = strings.Replace(res.Header.Get("Etag"), "\"", "", -1)
+		eTag = strings.Replace(res.Header.Get("ETag"), "\"", "", -1)
 	}
 	return
 }
@@ -721,7 +721,7 @@ func (c Client) GetObject(bucketName, objectName string, startPos, endPos int64)
 		return
 	}
 	output = GetObjectResponse{Body: res.Body, Meta: map[string]string{}}
-	eTag := strings.Replace(res.Header.Get("Etag"), "\"", "", -1)
+	eTag := strings.Replace(res.Header.Get("ETag"), "\"", "", -1)
 	output.ETag = eTag
 	size, _ := strconv.Atoi(res.Header.Get("Content-Length"))
 	output.Size = size

@@ -13,15 +13,34 @@ import (
 )
 
 const (
-	AccessKeyId     = "0b0f67dfb88244b289b72b142befad0c"    // Modifiy it before go test
-	SecretAccessKey = "bad522c2126a4618a8125f4b6cf6356f"    // Modifiy it before go test
-	TestBukketName  = "baidubce-golang-sdk-test"
-	TestObjectName  = "baidubce-golang-sdk-test-object"
-	TestObjectName1 = "baidubce-golang-sdk-test-object-1"
-	DebugHost       = "bj.bcebos.com"
+	DefaultAccessKeyId     = "0b0f67dfb88244b289b72b142befad0c"
+	DefaultSecretAccessKey = "bad522c2126a4618a8125f4b6cf6356f"
+	DefaultDebugHost       = "bj.bcebos.com"
+	TestBukketName         = "baidubce-golang-sdk-test"
+	TestObjectName         = "baidubce-golang-sdk-test-object"
+	TestObjectName1        = "baidubce-golang-sdk-test-object-1"
 )
 
+var AccessKeyId string
+var SecretAccessKey string
+var DebugHost string
+
 func TestInit(t *testing.T) {
+	AccessKeyId = DefaultAccessKeyId
+	if os.Getenv("ACCESS_KEY_ID") != "" {
+		AccessKeyId = os.Getenv("ACCESS_KEY_ID")
+	}
+
+	SecretAccessKey = DefaultSecretAccessKey
+	if os.Getenv("SECRET_ACCESS_KEY") != "" {
+		SecretAccessKey = os.Getenv("SECRET_ACCESS_KEY")
+	}
+
+	DebugHost = DefaultDebugHost
+	if os.Getenv("DEBUG_HOST") != "" {
+		DebugHost = os.Getenv("DEBUG_HOST")
+	}
+
 	fileSize := 256
 	content := make([]byte, fileSize)
 	rand.Read(content)
@@ -459,17 +478,10 @@ func TestGetObject(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	res1, err := c.GetObject(TestBukketName, TestObjectName, 0, 0)
+	_, err = c.GetObject(TestBukketName, TestObjectName, 0, 0)
 	if err != nil {
 		t.Errorf("GetObject failed.")
 		t.Errorf(err.Error())
-	}
-
-	h := md5.New()
-	io.WriteString(h, string(content))
-
-	if res1.ETag != fmt.Sprintf("%x", h.Sum(nil)) {
-		t.Errorf("CopyObject failed. eTag Not Match.")
 	}
 
 	c.DeleteObject(TestBukketName, TestObjectName)
