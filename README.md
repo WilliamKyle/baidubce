@@ -1,5 +1,6 @@
 # baidubce
 Baidu BCE Golang SDK
+[![Build Status](https://travis-ci.org/WilliamKyle/baidubce.svg?branch=master)](https://travis-ci.org/WilliamKyle/baidubce)
 
 在对 service/bos 进行测试前，请先修改 bos_client_test.go 里面的 AccessKeyId 和 SecretAccessKey
 
