@@ -80,7 +80,7 @@ func (c Client) doRequest(req *httplib.Request) (*http.Response, error) {
 		return res, err
 	}
 
-	if res.StatusCode != 200 {
+	if res.StatusCode != 200 && res.StatusCode != 206 {
 		errR := &ErrorResponse{}
 		if req.Method == httplib.HEAD || req.Method == httplib.DELETE {
 			errR.Code = fmt.Sprintf("%d", res.StatusCode)
